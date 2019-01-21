@@ -42,17 +42,20 @@ func TestNew(t *testing.T) {
 func TestInsert(t *testing.T) {
 	list := New(8)
 	list.randGen = &testRandGen{}
+	nilNode := list.Header.Forward[0]
 
 	expectedKey := uint(1)
 	expectedVal := []byte("testing")
 	expectedNode := &Node{
 		Key:   expectedKey,
 		Value: expectedVal,
+		Forward: []*Node{
+			nilNode,
+		},
 	}
 	list.Insert(expectedKey, expectedVal)
 
-	actualNode := list.Header.Forward[0]
-	compareNodeContents(t, expectedNode, actualNode)
+	compareNodeContents(t, expectedNode, list.Header.Forward[0])
 }
 
 func compareNodeContents(t *testing.T, expected, actual *Node) {
@@ -73,6 +76,21 @@ func compareNodeContents(t *testing.T, expected, actual *Node) {
 		if element != actualVal[i] {
 			t.Errorf("wrong node value at position %d. expected %q. got %q",
 				i, element, actualVal[i])
+		}
+	}
+
+	expectedForward := expected.Forward
+	actualForward := actual.Forward
+
+	if len(expectedForward) != len(actualForward) {
+		t.Fatalf("wrong length of node forward links. expected %d. got %d.",
+			len(expectedForward),
+			len(actualForward))
+	}
+	for i, node := range expectedForward {
+		if node != actualForward[i] {
+			t.Errorf("wrong node forward link at position %d. expected %+v. got %+v",
+				i, node, actualForward[i])
 		}
 	}
 }
