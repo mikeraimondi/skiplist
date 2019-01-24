@@ -40,25 +40,57 @@ func TestNew(t *testing.T) {
 	}
 }
 func TestInsert(t *testing.T) {
-	list := New(8)
-	list.randGen = &testRandGen{}
-	nilNode := list.Header.Forward[0]
-
-	expectedKey := uint(1)
-	expectedVal := []byte("testing")
-	expectedNode := &Node{
-		Key:   expectedKey,
-		Value: expectedVal,
-		Forward: []*Node{
-			nilNode,
+	nilNode := newNil()
+	tests := []struct {
+		insertedKeys []uint
+		insertedVals [][]byte
+		expectedList *List
+	}{
+		{
+			[]uint{1},
+			[][]byte{[]byte("testing")},
+			&List{
+				Header: &Node{
+					Forward: []*Node{
+						&Node{
+							Key:   uint(1),
+							Value: []byte("testing"),
+							Forward: []*Node{
+								nilNode,
+							},
+						},
+						nilNode,
+					},
+				},
+			},
 		},
 	}
-	list.Insert(expectedKey, expectedVal)
+	for _, tt := range tests {
+		list := New(2)
+		list.randGen = &testRandGen{}
 
-	compareNodeContents(t, expectedNode, list.Header.Forward[0])
+		for i := 0; i < len(tt.insertedKeys); i++ {
+			list.Insert(tt.insertedKeys[i], tt.insertedVals[i])
+		}
+
+		expectedNode := tt.expectedList.Header
+		actualNode := list.Header
+		compareNodes(t, expectedNode, actualNode)
+	}
 }
 
-func compareNodeContents(t *testing.T, expected, actual *Node) {
+func compareNodes(t *testing.T, expected, actual *Node) {
+	if expected == nil || actual == nil {
+		t.Fatalf("nil node pointer!")
+	}
+
+	if expected.isNil() {
+		if actual.isNil() {
+			return
+		}
+		t.Fatalf("expected NIL node. got %+v", actual)
+	}
+
 	if expected.Key != actual.Key {
 		t.Fatalf("wrong node key. expected %d. got %d",
 			expected.Key, actual.Key)
@@ -68,9 +100,9 @@ func compareNodeContents(t *testing.T, expected, actual *Node) {
 	actualVal := actual.Value
 
 	if len(expectedVal) != len(actualVal) {
-		t.Fatalf("wrong node value length. expected %d. got %d.",
-			len(expectedVal),
-			len(actualVal))
+		t.Fatalf("wrong node value. expected %q. got %q.",
+			expectedVal,
+			actualVal)
 	}
 	for i, element := range expectedVal {
 		if element != actualVal[i] {
@@ -83,14 +115,11 @@ func compareNodeContents(t *testing.T, expected, actual *Node) {
 	actualForward := actual.Forward
 
 	if len(expectedForward) != len(actualForward) {
-		t.Fatalf("wrong length of node forward links. expected %d. got %d.",
-			len(expectedForward),
-			len(actualForward))
+		t.Fatalf("wrong forward links. expected %v. got %v.",
+			expectedForward,
+			actualForward)
 	}
 	for i, node := range expectedForward {
-		if node != actualForward[i] {
-			t.Errorf("wrong node forward link at position %d. expected %+v. got %+v",
-				i, node, actualForward[i])
-		}
+		compareNodes(t, node, actualForward[i])
 	}
 }
