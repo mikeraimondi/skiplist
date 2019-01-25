@@ -102,9 +102,7 @@ func TestInsert(t *testing.T) {
 			list.Insert([]byte(kv[0]), []byte(kv[1]))
 		}
 
-		expectedNode := tt.expectedList.header
-		actualNode := list.header
-		compareNodes(t, expectedNode, actualNode)
+		compareNodes(t, tt.expectedList.header, list.header)
 	}
 }
 
@@ -121,19 +119,9 @@ func compareNodes(t *testing.T, expected, actual *Node) {
 			expected.Key, actual.Key)
 	}
 
-	expectedVal := expected.Value
-	actualVal := actual.Value
-
-	if len(expectedVal) != len(actualVal) {
-		t.Fatalf("wrong node value. expected %q. got %q.",
-			expectedVal,
-			actualVal)
-	}
-	for i, element := range expectedVal {
-		if element != actualVal[i] {
-			t.Errorf("wrong node value at position %d. expected %q. got %q",
-				i, element, actualVal[i])
-		}
+	if bytes.Compare(expected.Value, actual.Value) != 0 {
+		t.Fatalf("wrong node value. expected %q. got %q",
+			expected.Value, actual.Value)
 	}
 
 	expectedForward := expected.Forward
