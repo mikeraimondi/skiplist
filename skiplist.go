@@ -1,6 +1,7 @@
 package skiplist
 
 import (
+	"bytes"
 	"math/rand"
 	"time"
 )
@@ -12,12 +13,12 @@ type randGen interface {
 }
 
 type Node struct {
-	Key     uint
+	Key     []byte
 	Value   []byte
 	Forward []*Node
 }
 
-func newNode(level int, key uint, value []byte) *Node {
+func newNode(level int, key, value []byte) *Node {
 	return &Node{
 		Key:     key,
 		Value:   value,
@@ -30,6 +31,7 @@ type List struct {
 	level    int
 	maxLevel int
 	randGen  randGen
+	less     func([]byte, []byte) bool
 }
 
 func New(maxLevel int) *List {
@@ -43,22 +45,25 @@ func New(maxLevel int) *List {
 		maxLevel: maxLevel,
 		header:   header,
 		randGen:  rand.New(randSrc),
+		less: func(a, b []byte) bool {
+			return bytes.Compare(a, b) == -1
+		},
 	}
 }
 
-func (l *List) Insert(searchKey uint, newValue []byte) {
+func (l *List) Insert(searchKey []byte, newValue []byte) {
 	update := make([]*Node, l.maxLevel)
 	current := l.header
 
 	for i := l.level; i >= 0; i-- {
-		for l.less(current.Forward[i], searchKey) {
+		for current.Forward[i] != nil && l.less(current.Forward[i].Key, searchKey) {
 			current = current.Forward[i]
 		}
 		update[i] = current
 	}
 
 	current = current.Forward[0]
-	if current != nil && current.Key == searchKey {
+	if current != nil && (bytes.Compare(current.Key, searchKey) != 0) {
 		current.Value = newValue
 		return
 	}
@@ -84,11 +89,4 @@ func (l *List) randomLevel() int {
 	}
 
 	return level
-}
-
-func (l *List) less(node *Node, searchKey uint) bool {
-	if node == nil {
-		return false
-	}
-	return node.Key < searchKey
 }

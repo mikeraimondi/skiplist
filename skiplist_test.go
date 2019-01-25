@@ -1,6 +1,7 @@
 package skiplist
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -35,23 +36,54 @@ func TestNew(t *testing.T) {
 		}
 	}
 }
+
 func TestInsert(t *testing.T) {
 	tests := []struct {
-		insertedKeys []uint
+		insertedKeys [][]byte
 		insertedVals [][]byte
 		expectedList *List
 	}{
 		{
-			[]uint{1},
-			[][]byte{[]byte("testing")},
+			[][]byte{[]byte("foo")},
+			[][]byte{[]byte("bar")},
 			&List{
 				header: &Node{
 					Forward: []*Node{
 						&Node{
-							Key:   uint(1),
-							Value: []byte("testing"),
+							Key:   []byte("foo"),
+							Value: []byte("bar"),
 							Forward: []*Node{
 								nil,
+							},
+						},
+						nil,
+					},
+				},
+			},
+		},
+		{
+			[][]byte{
+				[]byte("a"),
+				[]byte("c"),
+			},
+			[][]byte{
+				[]byte("b"),
+				[]byte("d"),
+			},
+			&List{
+				header: &Node{
+					Forward: []*Node{
+						&Node{
+							Key:   []byte("a"),
+							Value: []byte("b"),
+							Forward: []*Node{
+								&Node{
+									Key:   []byte("c"),
+									Value: []byte("d"),
+									Forward: []*Node{
+										nil,
+									},
+								},
 							},
 						},
 						nil,
@@ -82,8 +114,8 @@ func compareNodes(t *testing.T, expected, actual *Node) {
 		t.Fatalf("expected NIL node. got %+v", actual)
 	}
 
-	if expected.Key != actual.Key {
-		t.Fatalf("wrong node key. expected %d. got %d",
+	if bytes.Compare(expected.Key, actual.Key) != 0 {
+		t.Fatalf("wrong node key. expected %q. got %q",
 			expected.Key, actual.Key)
 	}
 
