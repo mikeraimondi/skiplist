@@ -14,16 +14,16 @@ func TestNew(t *testing.T) {
 	maxLevel := 8
 	list := New(maxLevel)
 
-	if list.Level != 0 {
-		t.Fatalf("wrong level for list. got %d. expected 0.", list.Level)
+	if list.level != 0 {
+		t.Fatalf("wrong level for list. got %d. expected 0.", list.level)
 	}
-	if list.MaxLevel != maxLevel {
+	if list.maxLevel != maxLevel {
 		t.Fatalf("wrong maxLevel for list. got %d. expected %d.",
-			list.MaxLevel,
+			list.maxLevel,
 			maxLevel)
 	}
 
-	header := list.Header
+	header := list.header
 
 	if l := len(header.Forward); l != maxLevel {
 		t.Fatalf("wrong length for header links. got %d. expected %d.", l, maxLevel)
@@ -45,7 +45,7 @@ func TestInsert(t *testing.T) {
 			[]uint{1},
 			[][]byte{[]byte("testing")},
 			&List{
-				Header: &Node{
+				header: &Node{
 					Forward: []*Node{
 						&Node{
 							Key:   uint(1),
@@ -68,8 +68,8 @@ func TestInsert(t *testing.T) {
 			list.Insert(tt.insertedKeys[i], tt.insertedVals[i])
 		}
 
-		expectedNode := tt.expectedList.Header
-		actualNode := list.Header
+		expectedNode := tt.expectedList.header
+		actualNode := list.header
 		compareNodes(t, expectedNode, actualNode)
 	}
 }

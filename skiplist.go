@@ -26,9 +26,9 @@ func newNode(level int, key uint, value []byte) *Node {
 }
 
 type List struct {
-	Header   *Node
-	Level    int
-	MaxLevel int
+	header   *Node
+	level    int
+	maxLevel int
 	randGen  randGen
 }
 
@@ -39,18 +39,18 @@ func New(maxLevel int) *List {
 
 	randSrc := rand.NewSource(time.Now().Unix()) // TODO don't use timestamp
 	return &List{
-		Level:    0,
-		MaxLevel: maxLevel,
-		Header:   header,
+		level:    0,
+		maxLevel: maxLevel,
+		header:   header,
 		randGen:  rand.New(randSrc),
 	}
 }
 
 func (l *List) Insert(searchKey uint, newValue []byte) {
-	update := make([]*Node, l.MaxLevel)
-	current := l.Header
+	update := make([]*Node, l.maxLevel)
+	current := l.header
 
-	for i := l.Level; i >= 0; i-- {
+	for i := l.level; i >= 0; i-- {
 		for l.less(current.Forward[i], searchKey) {
 			current = current.Forward[i]
 		}
@@ -64,11 +64,11 @@ func (l *List) Insert(searchKey uint, newValue []byte) {
 	}
 
 	level := l.randomLevel()
-	if level > l.Level {
-		for i := l.Level + 1; i <= level; i++ {
-			update[i] = l.Header
+	if level > l.level {
+		for i := l.level + 1; i <= level; i++ {
+			update[i] = l.header
 		}
-		l.Level = level
+		l.level = level
 	}
 	node := newNode(level, searchKey, newValue)
 	for i := 0; i <= level; i++ {
@@ -79,7 +79,7 @@ func (l *List) Insert(searchKey uint, newValue []byte) {
 
 func (l *List) randomLevel() int {
 	level := 0
-	for random := l.randGen.Float32(); random < p && level < l.MaxLevel; random = l.randGen.Float32() {
+	for random := l.randGen.Float32(); random < p && level < l.maxLevel; random = l.randGen.Float32() {
 		level++
 	}
 
