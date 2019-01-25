@@ -42,13 +42,13 @@ func TestNew(t *testing.T) {
 
 func TestInsert(t *testing.T) {
 	tests := []struct {
-		insertedKeys [][]byte
-		insertedVals [][]byte
+		keyVals      [][]string
 		expectedList *List
 	}{
 		{
-			[][]byte{[]byte("foo")},
-			[][]byte{[]byte("bar")},
+			[][]string{
+				[]string{"foo", "bar"},
+			},
 			&List{
 				header: &Node{
 					Forward: []*Node{
@@ -65,13 +65,9 @@ func TestInsert(t *testing.T) {
 			},
 		},
 		{
-			[][]byte{
-				[]byte("a"),
-				[]byte("c"),
-			},
-			[][]byte{
-				[]byte("b"),
-				[]byte("d"),
+			[][]string{
+				[]string{"a", "b"},
+				[]string{"c", "d"},
 			},
 			&List{
 				header: &Node{
@@ -102,8 +98,8 @@ func TestInsert(t *testing.T) {
 		}
 		list.randGen = &testRandGen{}
 
-		for i := 0; i < len(tt.insertedKeys); i++ {
-			list.Insert(tt.insertedKeys[i], tt.insertedVals[i])
+		for _, kv := range tt.keyVals {
+			list.Insert([]byte(kv[0]), []byte(kv[1]))
 		}
 
 		expectedNode := tt.expectedList.header
