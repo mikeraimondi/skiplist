@@ -13,7 +13,10 @@ func (s *testRandGen) Float32() float32 {
 
 func TestNew(t *testing.T) {
 	maxLevel := 8
-	list := New(maxLevel)
+	list, err := New(maxLevel)
+	if err != nil {
+		t.Fatalf("New returned error: %s", err)
+	}
 
 	if list.level != 0 {
 		t.Fatalf("wrong level for list. got %d. expected 0.", list.level)
@@ -93,7 +96,10 @@ func TestInsert(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		list := New(2)
+		list, err := New(2)
+		if err != nil {
+			t.Fatalf("New returned error: %s", err)
+		}
 		list.randGen = &testRandGen{}
 
 		for i := 0; i < len(tt.insertedKeys); i++ {

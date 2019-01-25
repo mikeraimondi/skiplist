@@ -2,8 +2,10 @@ package skiplist
 
 import (
 	"bytes"
+	crand "crypto/rand"
+	"math"
+	"math/big"
 	"math/rand"
-	"time"
 )
 
 const p = 0.5
@@ -34,12 +36,16 @@ type List struct {
 	less     func([]byte, []byte) bool
 }
 
-func New(maxLevel int) *List {
+func New(maxLevel int) (*List, error) {
 	header := &Node{
 		Forward: make([]*Node, maxLevel, maxLevel),
 	}
 
-	randSrc := rand.NewSource(time.Now().Unix()) // TODO don't use timestamp
+	seed, err := crand.Int(crand.Reader, big.NewInt(math.MaxInt64))
+	if err != nil {
+		return nil, err
+	}
+	randSrc := rand.NewSource(seed.Int64())
 	return &List{
 		level:    0,
 		maxLevel: maxLevel,
@@ -48,7 +54,7 @@ func New(maxLevel int) *List {
 		less: func(a, b []byte) bool {
 			return bytes.Compare(a, b) == -1
 		},
-	}
+	}, nil
 }
 
 func (l *List) Insert(searchKey []byte, newValue []byte) {
