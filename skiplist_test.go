@@ -29,18 +29,13 @@ func TestNew(t *testing.T) {
 		t.Fatalf("wrong length for header links. got %d. expected %d.", l, maxLevel)
 	}
 
-	nilNode := header.Forward[0]
-	if nilNode.isNil() != true {
-		t.Fatal("header not linked to NIL node")
-	}
 	for i := 0; i < maxLevel; i++ {
-		if node := header.Forward[i]; node != nilNode {
-			t.Fatalf("expected header link %d to be NIL node. got %+v", i, node)
+		if node := header.Forward[i]; node != nil {
+			t.Fatalf("expected header link %d to be nil. got %+v", i, node)
 		}
 	}
 }
 func TestInsert(t *testing.T) {
-	nilNode := newNil()
 	tests := []struct {
 		insertedKeys []uint
 		insertedVals [][]byte
@@ -56,10 +51,10 @@ func TestInsert(t *testing.T) {
 							Key:   uint(1),
 							Value: []byte("testing"),
 							Forward: []*Node{
-								nilNode,
+								nil,
 							},
 						},
-						nilNode,
+						nil,
 					},
 				},
 			},
@@ -80,12 +75,8 @@ func TestInsert(t *testing.T) {
 }
 
 func compareNodes(t *testing.T, expected, actual *Node) {
-	if expected == nil || actual == nil {
-		t.Fatalf("nil node pointer!")
-	}
-
-	if expected.isNil() {
-		if actual.isNil() {
+	if expected == nil {
+		if actual == nil {
 			return
 		}
 		t.Fatalf("expected NIL node. got %+v", actual)

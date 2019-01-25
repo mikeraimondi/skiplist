@@ -5,10 +5,7 @@ import (
 	"time"
 )
 
-const (
-	maxKey = ^uint(0) // TODO should be greater than any legal key
-	p      = 0.5
-)
+const p = 0.5
 
 type randGen interface {
 	Float32() float32
@@ -20,22 +17,12 @@ type Node struct {
 	Forward []*Node
 }
 
-func newNil() *Node {
-	return &Node{
-		Key: maxKey,
-	}
-}
-
 func newNode(level int, key uint, value []byte) *Node {
 	return &Node{
 		Key:     key,
 		Value:   value,
 		Forward: make([]*Node, level+1, level+1),
 	}
-}
-
-func (n *Node) isNil() bool {
-	return n.Key == maxKey
 }
 
 type List struct {
@@ -46,12 +33,8 @@ type List struct {
 }
 
 func New(maxLevel int) *List {
-	nilNode := newNil()
 	header := &Node{
 		Forward: make([]*Node, maxLevel, maxLevel),
-	}
-	for i := 0; i < maxLevel; i++ {
-		header.Forward[i] = nilNode
 	}
 
 	randSrc := rand.NewSource(time.Now().Unix()) // TODO don't use timestamp
@@ -68,14 +51,14 @@ func (l *List) Insert(searchKey uint, newValue []byte) {
 	current := l.Header
 
 	for i := l.Level; i >= 0; i-- {
-		for current.Forward[i].Key < searchKey {
+		for l.less(current.Forward[i], searchKey) {
 			current = current.Forward[i]
 		}
 		update[i] = current
 	}
 
 	current = current.Forward[0]
-	if current.Key == searchKey {
+	if current != nil && current.Key == searchKey {
 		current.Value = newValue
 		return
 	}
@@ -96,10 +79,16 @@ func (l *List) Insert(searchKey uint, newValue []byte) {
 
 func (l *List) randomLevel() int {
 	level := 0
-	// TODO seed at list init time. allow tests to swap out random source
 	for random := l.randGen.Float32(); random < p && level < l.MaxLevel; random = l.randGen.Float32() {
 		level++
 	}
 
 	return level
+}
+
+func (l *List) less(node *Node, searchKey uint) bool {
+	if node == nil {
+		return false
+	}
+	return node.Key < searchKey
 }
