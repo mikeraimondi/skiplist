@@ -5,17 +5,11 @@ import (
 	"testing"
 )
 
-type testRandGen struct{}
-
-func (s *testRandGen) Float32() float32 {
-	return 0.9
-}
-
 func TestNew(t *testing.T) {
 	maxLevel := 8
 	list, err := New(maxLevel)
 	if err != nil {
-		t.Fatalf("New returned error: %s", err)
+		t.Fatalf("expected no error calling New. got %s", err)
 	}
 
 	if list.level != 0 {
@@ -92,11 +86,7 @@ func TestInsert(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		list, err := New(2)
-		if err != nil {
-			t.Fatalf("New returned error: %s", err)
-		}
-		list.randGen = &testRandGen{}
+		list := newList(2)
 
 		for _, kv := range tt.keyVals {
 			list.Insert([]byte(kv[0]), []byte(kv[1]))
@@ -134,5 +124,26 @@ func compareNodes(t *testing.T, expected, actual *Node) {
 	}
 	for i, node := range expectedForward {
 		compareNodes(t, node, actualForward[i])
+	}
+}
+
+type testRandGen struct{}
+
+func (s *testRandGen) Float32() float32 {
+	return 0.9
+}
+
+func newList(maxLevel int) *List {
+	header := &Node{
+		Forward: make([]*Node, maxLevel, maxLevel),
+	}
+
+	return &List{
+		maxLevel: maxLevel,
+		header:   header,
+		randGen:  &testRandGen{},
+		less: func(a, b []byte) bool {
+			return bytes.Compare(a, b) == -1
+		},
 	}
 }
