@@ -46,12 +46,12 @@ func New(maxLevel int) (*List, error) {
 		return nil, err
 	}
 	randSrc := rand.NewSource(seed.Int64())
+
 	return &List{
-		level:    0,
 		maxLevel: maxLevel,
 		header:   header,
 		randGen:  rand.New(randSrc),
-		less: func(a, b []byte) bool {
+		less: func(a, b []byte) bool { // TODO allow callers to pass in `less`
 			return bytes.Compare(a, b) == -1
 		},
 	}, nil
