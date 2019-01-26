@@ -35,6 +35,12 @@ func TestNew(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
+	// TODO insert nil,nil
+	// TODO insert nil,val
+	// TODO insert val,nil
+	// TODO insert []byte{},[]byte{}
+	// TODO insert []byte{},nil
+	// TODO insert val,[]byte{}
 	tests := []struct {
 		keyVals      [][]string
 		expectedList *List
