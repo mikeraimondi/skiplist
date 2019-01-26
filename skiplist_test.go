@@ -42,10 +42,12 @@ func TestInsert(t *testing.T) {
 	// TODO insert []byte{},nil
 	// TODO insert val,[]byte{}
 	tests := []struct {
+		name         string
 		keyVals      [][]string
 		expectedList *List
 	}{
 		{
+			"with 1 pair",
 			[][]string{
 				[]string{"foo", "bar"},
 			},
@@ -65,6 +67,7 @@ func TestInsert(t *testing.T) {
 			},
 		},
 		{
+			"with 2 sequential pairs",
 			[][]string{
 				[]string{"a", "b"},
 				[]string{"c", "d"},
@@ -92,13 +95,15 @@ func TestInsert(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		list := newList(2)
+		t.Run(tt.name, func(t *testing.T) {
+			list := newList(2)
 
-		for _, kv := range tt.keyVals {
-			list.Insert([]byte(kv[0]), []byte(kv[1]))
-		}
+			for _, kv := range tt.keyVals {
+				list.Insert([]byte(kv[0]), []byte(kv[1]))
+			}
 
-		compareNodes(t, tt.expectedList.header, list.header)
+			compareNodes(t, tt.expectedList.header, list.header)
+		})
 	}
 }
 
