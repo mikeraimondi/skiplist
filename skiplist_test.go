@@ -99,10 +99,57 @@ func TestInsert(t *testing.T) {
 			list := newList(2)
 
 			for _, kv := range tt.keyVals {
-				list.Insert([]byte(kv[0]), []byte(kv[1]))
+				key := []byte(kv[0])
+				val := []byte(kv[1])
+
+				list.Insert(key, val)
 			}
 
 			compareNodes(t, tt.expectedList.header, list.header)
+		})
+	}
+}
+
+func TestSearch(t *testing.T) {
+	// TODO what to return when search fails? second 'ok' return val?
+	tests := []struct {
+		name       string
+		searchList *Node
+		keyVals    [][]string
+	}{
+		{
+			"with 1 pair",
+			&Node{
+				Forward: []*Node{
+					&Node{
+						Key:   []byte("foo"),
+						Value: []byte("bar"),
+						Forward: []*Node{
+							nil,
+						},
+					},
+					nil,
+				},
+			},
+			[][]string{
+				[]string{"foo", "bar"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, kv := range tt.keyVals {
+				list := newList(2)
+				list.header = tt.searchList
+				searchKey := []byte(kv[0])
+				expectedVal := []byte(kv[1])
+
+				actualVal := list.Search(searchKey)
+				if bytes.Compare(actualVal, expectedVal) != 0 {
+					t.Fatalf("Search returned wrong value. expected %q. got %q",
+						expectedVal, actualVal)
+				}
+			}
 		})
 	}
 }

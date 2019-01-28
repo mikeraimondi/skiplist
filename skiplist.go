@@ -88,6 +88,23 @@ func (l *List) Insert(searchKey []byte, newValue []byte) {
 	}
 }
 
+func (l *List) Search(searchKey []byte) []byte {
+	current := l.header
+
+	for i := l.level; i >= 0; i-- {
+		for current.Forward[i] != nil && l.less(current.Forward[i].Key, searchKey) {
+			current = current.Forward[i]
+		}
+	}
+
+	current = current.Forward[0]
+	if current != nil && (bytes.Compare(current.Key, searchKey) == 0) {
+		return current.Value
+	}
+
+	return []byte{}
+}
+
 func (l *List) randomLevel() int {
 	level := 0
 	for random := l.randGen.Float32(); random < p && level < l.maxLevel; random = l.randGen.Float32() {
