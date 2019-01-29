@@ -88,7 +88,7 @@ func (l *List) Insert(searchKey []byte, newValue []byte) {
 	}
 }
 
-func (l *List) Search(searchKey []byte) []byte {
+func (l *List) Search(searchKey []byte) ([]byte, bool) {
 	current := l.header
 
 	for i := l.level; i >= 0; i-- {
@@ -99,10 +99,10 @@ func (l *List) Search(searchKey []byte) []byte {
 
 	current = current.Forward[0]
 	if l.keysAreEqual(current, searchKey) {
-		return current.Value
+		return current.Value, true
 	}
 
-	return []byte{}
+	return []byte{}, false
 }
 
 func (l *List) compare(n *Node, searchKey []byte) bool {

@@ -114,9 +114,11 @@ func TestInsert(t *testing.T) {
 func TestSearch(t *testing.T) {
 	// TODO what to return when search fails? second 'ok' return val?
 	tests := []struct {
-		name       string
-		searchList *Node
-		keyVals    [][]string
+		name        string
+		searchList  *Node
+		searchKey   string
+		expectedVal string
+		expectedOk  bool
 	}{
 		{
 			"with 1 pair",
@@ -132,24 +134,24 @@ func TestSearch(t *testing.T) {
 					nil,
 				},
 			},
-			[][]string{
-				[]string{"foo", "bar"},
-			},
+			"foo",
+			"bar",
+			true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			for _, kv := range tt.keyVals {
-				list := newList(2)
-				list.header = tt.searchList
-				searchKey := []byte(kv[0])
-				expectedVal := []byte(kv[1])
+			list := newList(2)
+			list.header = tt.searchList
 
-				actualVal := list.Search(searchKey)
-				if bytes.Compare(actualVal, expectedVal) != 0 {
-					t.Fatalf("Search returned wrong value. expected %q. got %q",
-						expectedVal, actualVal)
-				}
+			actualVal, actualOk := list.Search([]byte(tt.searchKey))
+			if actualOk != tt.expectedOk {
+				t.Errorf("Search return wrong 'OK'. expected %v. got %v",
+					tt.expectedOk, actualOk)
+			}
+			if bytes.Compare(actualVal, []byte(tt.expectedVal)) != 0 {
+				t.Fatalf("Search returned wrong value. expected %q. got %q",
+					tt.expectedVal, actualVal)
 			}
 		})
 	}
