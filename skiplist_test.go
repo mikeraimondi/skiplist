@@ -52,6 +52,7 @@ func TestInsert(t *testing.T) {
 				[]string{"foo", "bar"},
 			},
 			&List{
+				level: 0,
 				header: &Node{
 					Forward: []*Node{
 						&Node{
@@ -73,6 +74,7 @@ func TestInsert(t *testing.T) {
 				[]string{"c", "d"},
 			},
 			&List{
+				level: 0,
 				header: &Node{
 					Forward: []*Node{
 						&Node{
@@ -94,17 +96,23 @@ func TestInsert(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			list := newList(2)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tt := test
+			t.Parallel()
 
+			list := newList(2)
 			for _, kv := range tt.keyVals {
 				key := []byte(kv[0])
 				val := []byte(kv[1])
 
 				list.Insert(key, val)
 			}
-			// TODO assert list.level is correct
+
+			if list.level != tt.expectedList.level {
+				t.Fatalf("list has wrong level. expected %d. got %d.",
+					tt.expectedList.level, list.level)
+			}
 
 			compareNodes(t, tt.expectedList.header, list.header)
 		})
@@ -168,8 +176,11 @@ func TestSearch(t *testing.T) {
 			false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tt := test
+			t.Parallel()
+
 			list := newList(2)
 			list.header = tt.searchList
 
