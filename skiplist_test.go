@@ -138,6 +138,18 @@ func TestSearch(t *testing.T) {
 			"bar",
 			true,
 		},
+		{
+			"with an empty list",
+			&Node{
+				Forward: []*Node{
+					nil,
+					nil,
+				},
+			},
+			"foo",
+			"",
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
