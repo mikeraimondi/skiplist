@@ -112,7 +112,6 @@ func TestInsert(t *testing.T) {
 }
 
 func TestSearch(t *testing.T) {
-	// TODO what to return when search fails? second 'ok' return val?
 	tests := []struct {
 		name        string
 		searchList  *Node
@@ -121,7 +120,7 @@ func TestSearch(t *testing.T) {
 		expectedOk  bool
 	}{
 		{
-			"with 1 pair",
+			"with 1 pair, key found",
 			&Node{
 				Forward: []*Node{
 					&Node{
@@ -137,6 +136,24 @@ func TestSearch(t *testing.T) {
 			"foo",
 			"bar",
 			true,
+		},
+		{
+			"with 1 pair, key not found",
+			&Node{
+				Forward: []*Node{
+					&Node{
+						Key:   []byte("foo"),
+						Value: []byte("bar"),
+						Forward: []*Node{
+							nil,
+						},
+					},
+					nil,
+				},
+			},
+			"baz",
+			"",
+			false,
 		},
 		{
 			"with an empty list",
