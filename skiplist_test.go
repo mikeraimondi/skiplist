@@ -104,6 +104,7 @@ func TestInsert(t *testing.T) {
 
 				list.Insert(key, val)
 			}
+			// TODO assert list.level is correct
 
 			compareNodes(t, tt.expectedList.header, list.header)
 		})

@@ -62,14 +62,14 @@ func (l *List) Insert(searchKey []byte, newValue []byte) {
 	current := l.header
 
 	for i := l.level; i >= 0; i-- {
-		for current.Forward[i] != nil && l.less(current.Forward[i].Key, searchKey) {
+		for l.compare(current.Forward[i], searchKey) {
 			current = current.Forward[i]
 		}
 		update[i] = current
 	}
 
 	current = current.Forward[0]
-	if current != nil && (bytes.Compare(current.Key, searchKey) != 0) {
+	if l.keysAreEqual(current, searchKey) {
 		current.Value = newValue
 		return
 	}
@@ -92,17 +92,25 @@ func (l *List) Search(searchKey []byte) []byte {
 	current := l.header
 
 	for i := l.level; i >= 0; i-- {
-		for current.Forward[i] != nil && l.less(current.Forward[i].Key, searchKey) {
+		for l.compare(current.Forward[i], searchKey) {
 			current = current.Forward[i]
 		}
 	}
 
 	current = current.Forward[0]
-	if current != nil && (bytes.Compare(current.Key, searchKey) == 0) {
+	if l.keysAreEqual(current, searchKey) {
 		return current.Value
 	}
 
 	return []byte{}
+}
+
+func (l *List) compare(n *Node, searchKey []byte) bool {
+	return n != nil && l.less(n.Key, searchKey)
+}
+
+func (l *List) keysAreEqual(n *Node, searchKey []byte) bool {
+	return n != nil && (bytes.Compare(n.Key, searchKey) == 0)
 }
 
 func (l *List) randomLevel() int {
