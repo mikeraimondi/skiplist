@@ -105,6 +105,34 @@ func (l *List) Search(searchKey []byte) ([]byte, bool) {
 	return []byte{}, false
 }
 
+func (l *List) Delete(searchKey []byte) bool {
+	update := make([]*Node, l.maxLevel)
+	current := l.header
+
+	for i := l.level; i >= 0; i-- {
+		for l.compare(current.Forward[i], searchKey) {
+			current = current.Forward[i]
+		}
+		update[i] = current
+	}
+
+	current = current.Forward[0]
+	if l.keysAreEqual(current, searchKey) {
+		for i := 0; i <= l.level; i++ {
+			if update[i].Forward[i] != current {
+				break
+			}
+			update[i].Forward[i] = current.Forward[i]
+		}
+		for l.level > 0 && l.header.Forward[l.level] == nil {
+			l.level--
+		}
+		return true
+	}
+
+	return false
+}
+
 func (l *List) compare(n *Node, searchKey []byte) bool {
 	return n != nil && l.less(n.Key, searchKey)
 }

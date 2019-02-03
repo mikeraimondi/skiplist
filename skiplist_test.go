@@ -119,6 +119,129 @@ func TestInsert(t *testing.T) {
 	}
 }
 
+func TestDelete(t *testing.T) {
+	tests := []struct {
+		name         string
+		searchKeys   []string
+		searchList   *List
+		expectedList *List
+		expectedOks  []bool
+	}{
+		{
+			"with 1 pair, key not found",
+			[]string{"foo"},
+			&List{
+				level: 0,
+				header: &Node{
+					Forward: []*Node{
+						&Node{
+							Key:   []byte("foo"),
+							Value: []byte("bar"),
+							Forward: []*Node{
+								nil,
+							},
+						},
+						nil,
+					},
+				},
+			},
+			&List{
+				level: 0,
+				header: &Node{
+					Forward: []*Node{
+						nil,
+						nil,
+					},
+				},
+			},
+			[]bool{true},
+		},
+		{
+			"with 1 pair, key not found",
+			[]string{"baz"},
+			&List{
+				level: 0,
+				header: &Node{
+					Forward: []*Node{
+						&Node{
+							Key:   []byte("foo"),
+							Value: []byte("bar"),
+							Forward: []*Node{
+								nil,
+							},
+						},
+						nil,
+					},
+				},
+			},
+			&List{
+				level: 0,
+				header: &Node{
+					Forward: []*Node{
+						&Node{
+							Key:   []byte("foo"),
+							Value: []byte("bar"),
+							Forward: []*Node{
+								nil,
+							},
+						},
+						nil,
+					},
+				},
+			},
+			[]bool{false},
+		},
+		{
+			"with an empty list",
+			[]string{"foo"},
+			&List{
+				level: 0,
+				header: &Node{
+					Forward: []*Node{
+						nil,
+						nil,
+					},
+				},
+			},
+			&List{
+				level: 0,
+				header: &Node{
+					Forward: []*Node{
+						nil,
+						nil,
+					},
+				},
+			},
+			[]bool{false},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			tt := test
+			t.Parallel()
+
+			list := newList(2)
+			list.header = tt.searchList.header
+			list.level = tt.searchList.level
+
+			for i, key := range tt.searchKeys {
+				res := list.Delete([]byte(key))
+				if res != tt.expectedOks[i] {
+					t.Fatalf("Wrong return value from delete. expected %t. got %t.",
+						tt.expectedOks[i], res)
+				}
+			}
+
+			if list.level != tt.expectedList.level {
+				t.Fatalf("list has wrong level. expected %d. got %d.",
+					tt.expectedList.level, list.level)
+			}
+
+			compareNodes(t, tt.expectedList.header, list.header)
+		})
+	}
+}
+
 func TestSearch(t *testing.T) {
 	tests := []struct {
 		name        string
