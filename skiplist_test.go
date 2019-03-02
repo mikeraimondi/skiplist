@@ -101,7 +101,7 @@ func TestInsert(t *testing.T) {
 			tt := test
 			t.Parallel()
 
-			list := newList(2)
+			list := newList(2, func() float32 { return 0.9 })
 			for _, kv := range tt.keyVals {
 				key := []byte(kv[0])
 				val := []byte(kv[1])
@@ -220,7 +220,7 @@ func TestDelete(t *testing.T) {
 			tt := test
 			t.Parallel()
 
-			list := newList(2)
+			list := newList(2, func() float32 { return 0.9 })
 			list.header = tt.searchList.header
 			list.level = tt.searchList.level
 
@@ -304,7 +304,7 @@ func TestSearch(t *testing.T) {
 			tt := test
 			t.Parallel()
 
-			list := newList(2)
+			list := newList(2, func() float32 { return 0.9 })
 			list.header = tt.searchList
 
 			actualVal, actualOk := list.Search([]byte(tt.searchKey))
@@ -351,13 +351,24 @@ func compareNodes(t *testing.T, expected, actual *Node) {
 	}
 }
 
-type testRandGen struct{}
-
-func (s *testRandGen) Float32() float32 {
-	return 0.9
+func TestRandomLevel(t *testing.T) {
+	maxLevel := 3
+	list := newList(maxLevel, func() float32 { return 0.1 })
+	if level := list.randomLevel(); level != maxLevel {
+		t.Fatalf("wrong value for randomLevel. expected %d. got %d",
+			maxLevel, level)
+	}
 }
 
-func newList(maxLevel int) *List {
+type testRandGen struct {
+	f func() float32
+}
+
+func (s *testRandGen) Float32() float32 {
+	return s.f()
+}
+
+func newList(maxLevel int, randFunc func() float32) *List {
 	header := &Node{
 		Forward: make([]*Node, maxLevel, maxLevel),
 	}
@@ -365,7 +376,7 @@ func newList(maxLevel int) *List {
 	return &List{
 		maxLevel: maxLevel,
 		header:   header,
-		randGen:  &testRandGen{},
+		randGen:  &testRandGen{randFunc},
 		less: func(a, b []byte) bool {
 			return bytes.Compare(a, b) == -1
 		},
